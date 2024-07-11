@@ -52,7 +52,7 @@ data trans2 ;
 	wday = weekday(trans_date); *1(일)~7;
 	fee = amount*0.03 ;
 
-	if wday in (6,7,1) then wday_desc="주말";
+	if wday in (6,7,1) then wday_desc="주말"; *할당문장;
 	else wday_desc="주중"; 
 
 	if fee >= 300 ; *새롭게 생성된 컬럼에 대해 조건 : IF ;
@@ -60,4 +60,33 @@ data trans2 ;
 	drop TransactionID datetime Trans_Time ;
 
 run; *자동출력; *자동리턴;
+
+data trans_fee_high trans_fee_low ; *출력데이터;
+	set fsi.transaction2 ; *입력데이터;
+	where year(trans_date)= 2018 and AccountID is not null ;
+
+	fee = amount*0.03 ;
+
+	if fee >= 300 then output; *pdv 머릿속 내용을 출력데이터에 찍어라; 
+
+run; *자동출력; *자동리턴;
+
+
+data trans_fee_high trans_fee_low ; *출력데이터;
+	set fsi.transaction2 ; *입력데이터;
+	where year(trans_date)= 2018 and AccountID is not null ;
+
+	fee = amount*0.03 ;
+
+	if fee >= 300 then output trans_fee_high ; *수동출력;
+	else if fee <= 30 then output trans_fee_low ;
+
+run; *자동출력(X); *자동리턴; *data step에 output이 있으면 수동출력이 되어 pdv 공간의 내용을 출력공간으로 내보내라 역할을 함 ;
+
+data test;
+	set fsi.transaction2 ; 
+	where year(trans_date)=2018 and accountid is not null ;
+	output;
+	output; *output 2번해서 row 수가 두 배로 늘어남;
+run;
 
