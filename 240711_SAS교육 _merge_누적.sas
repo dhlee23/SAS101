@@ -197,10 +197,57 @@ data acc2;
 	keep trans_month acc_fee acc_cnt ;
 run ; *새로운 컬럼을 만들어서 추가 작업하기 위해서는 data step에서만 가능 예) 누적;
 
-*월별 총 거래금액이 높은 10명 고객(accountid);
+* 거래데이타 기준 총 거래금액이 높은 10명 고객(acountid) : trans_top10 ;
 
-data trans_month_top10;
-	set work.cn_transaction2 ;
 
-	keep trans_month AccountID amount ;
+/* SAS에서 한 스텝에서 안되는 경우도 많음 */
+proc sort data=work.cn_transaction2 out=sort_trans;
+	by accountid;
+run;
+data trans_accid;
+	set sort_trans;
+	by accountid ; * 사전정렬 : first. / last. ;
+	
+	if first.accountid =1 then total_amt=0;
+	total_amt + amount;
+	if last.accountid=1;
+
+	keep accountid total_amt ;
+run;
+proc sort data=trans_accid;
+	by descending total_amt;
+run;
+data top10;
+	set trans_accid (obs=10);
+run;
+
+
+* 거래데이타 기준 월별 총 거래금액이 높은 10명 고객(accountid) : trans_month_top10 ;
+
+/* 2. 월/고객별 총 거래금액 */
+
+proc sort data=work.cn_transaction2 out=sort_trans; *새로 만드는 경우임;
+	by trans_month accountid ; *first. last. ;
+run;
+data trans_month_accountid;
+	set work.sort_trans ;
+	by trans_month accountid;
+
+	if first.accountid=1 then total_amt=0;
+	total_amt + amount ;
+	if last.accountid=1;
+
+	keep trans_month AccountID total_amt ;
+run;
+proc sort data=trans_month_accountid; *덮어씌우는 경우임;
+	by trans_month descending total_amt ;
+run;
+data month_top10; *월별 top10 뽑기;
+	set trans_month_accountid;
+	by trans_month;
+
+	if first.trans_month=1 then cnt=0;
+	cnt+1;
+
+	if cnt <= 10;
 run;
