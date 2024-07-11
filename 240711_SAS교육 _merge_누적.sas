@@ -239,6 +239,8 @@ data trans_month_accountid;
 
 	keep trans_month AccountID total_amt ;
 run;
+/* sort summary도 가능하며, means 로도 가능*/
+
 proc sort data=trans_month_accountid; *덮어씌우는 경우임;
 	by trans_month descending total_amt ;
 run;
@@ -250,4 +252,47 @@ data month_top10; *월별 top10 뽑기;
 	cnt+1;
 
 	if cnt <= 10;
+run;
+
+/*문자 숫자 변경 put 함수 
+그 반대 경우도 가능*/
+
+/*comma10.2 옷입혀주기*/
+libname pg1 base 'C:\educ\FSI_SAS_SQL\prog1_v2\data'; /* dwdwdqdw */
+libname pg2 v9 "C:\educ\FSI_SAS_SQL\prog2_v2\data";
+libname fsi        'C:\educ\FSI_SAS_SQL';
+
+/* 7장 전치 transpose 작업 */
+proc print data= pg2.class_birthdate;
+run;
+
+proc transpose data= pg2.class_birthdate out=work.trans1;
+	var height weight; *전치대상 칼럼;
+run;
+
+proc transpose data= pg2.class_birthdate out=work.trans1;
+	var height weight;
+	id name ; *전치한 값의 식별할 칼럼;
+run;
+
+proc transpose data= pg2.class_birthdate out=work.trans2;
+	var height weight;
+	by name ; *전치한 값의 식별할 칼럼;
+run;
+proc transpose data= pg2.class_birthdate out=work.trans2 (rename=(_name_=check col1=value ) );
+	var height weight;
+	by name ; *전치한 값의 식별할 칼럼;
+run;
+
+*고객의 월별 총 거래금액;
+proc means data = work.cn_transaction2 noprint nway;
+	class AccountID trans_month;
+	var amount;
+	output out=work.trans_stats sum=total;
+run;
+
+proc transpose data=trans_stats out=trans_wide prefix=month;
+	by accountid ; *정렬;
+	var total;
+	id trans_month ; *전치할 값의 식별할 값 이거 중요;
 run;

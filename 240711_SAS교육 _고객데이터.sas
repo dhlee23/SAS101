@@ -1,5 +1,5 @@
 libname pg1 base 'C:\educ\FSI_SAS_SQL\prog1_v2\data'; /* dwdwdqdw */
-libname pg2 v9 "C:\educ\FSI_SAS_SQL\prog2_v2";
+libname pg2 v9 "C:\educ\FSI_SAS_SQL\prog2_v2\data";
 libname fsi        'C:\educ\FSI_SAS_SQL';
 
 /* 테이블에 대한 설명/ 값 부분 확인 */
